@@ -23,7 +23,10 @@ app.get('/clickup-tasks', async (req, res) => {
             field_id: HUBSPOT_DEAL_FIELD_ID,
             operator: '=',
             value: String(dealId)
-          }])
+          }]),
+          page: 0,
+          subtasks: true,
+          include_closed: true
         }
       }
     );
