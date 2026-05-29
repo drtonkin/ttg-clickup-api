@@ -33,7 +33,7 @@ app.get('/clickup-tasks-by-deal', async (req, res) => {
         `https://api.clickup.com/api/v2/list/${list.id}/task`,
         {
           headers: { Authorization: CLICKUP_API_TOKEN },
-          params: { page: 0, subtasks: true, include_closed: true }
+          params: { page: 0, subtasks: true, include_closed: false }
         }
       ).then(r => r.data.tasks || []).catch(() => [])
     );
