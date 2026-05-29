@@ -16,29 +16,32 @@ app.get('/clickup-tasks-by-deal', async (req, res) => {
   try {
     const dealResponse = await axios.get(
       `https://api.hubapi.com/crm/v3/objects/deals/${dealId}?properties=ttg_clickup_folder_id`,
-      {
-        headers: { Authorization: `Bearer ${HUBSPOT_API_TOKEN}` }
-      }
+      { headers: { Authorization: `Bearer ${HUBSPOT_API_TOKEN}` } }
     );
 
     const folderId = dealResponse.data?.properties?.ttg_clickup_folder_id;
-    if (!folderId) {
-      return res.json([]);
-    }
+    if (!folderId) return res.json([]);
 
-    const clickupResponse = await axios.get(
-      `https://api.clickup.com/api/v2/folder/${folderId}/task`,
-      {
-        headers: { Authorization: CLICKUP_API_TOKEN },
-        params: {
-          page: 0,
-          subtasks: true,
-          include_closed: true
-        }
-      }
+    const listsResponse = await axios.get(
+      `https://api.clickup.com/api/v2/folder/${folderId}/list`,
+      { headers: { Authorization: CLICKUP_API_TOKEN } }
     );
 
-    res.json(clickupResponse.data.tasks);
+    const lists = listsResponse.data.lists || [];
+    const taskPromises = lists.map(list =>
+      axios.get(
+        `https://api.clickup.com/api/v2/list/${list.id}/task`,
+        {
+          headers: { Authorization: CLICKUP_API_TOKEN },
+          params: { page: 0, subtasks: true, include_closed: true }
+        }
+      ).then(r => r.data.tasks || []).catch(() => [])
+    );
+
+    const taskArrays = await Promise.all(taskPromises);
+    const allTasks = taskArrays.flat();
+
+    res.json(allTasks);
   } catch (err) {
     res.status(500).json({ error: 'API error: ' + err.message });
   }
