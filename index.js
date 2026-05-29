@@ -39,7 +39,9 @@ app.get('/clickup-tasks-by-deal', async (req, res) => {
     );
 
     const taskArrays = await Promise.all(taskPromises);
-    const allTasks = taskArrays.flat();
+    const allTasks = taskArrays.flat().filter(task =>
+      task.status?.status?.toLowerCase() !== 'complete'
+    );
 
     res.json(allTasks);
   } catch (err) {
