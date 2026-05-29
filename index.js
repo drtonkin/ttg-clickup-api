@@ -27,7 +27,7 @@ app.get('/clickup-tasks', async (req, res) => {
         }
       }
     );
-    res.json({ tasks: response.data.tasks });
+    res.json(response.data.tasks);
   } catch (err) {
     res.status(500).json({ error: 'ClickUp API error: ' + err.message });
   }
